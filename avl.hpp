@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 // Node and forward declaration because g++ does
 // not understand nested classes.
 template <class T>
@@ -17,8 +19,6 @@ class AvlNode
 		: element(theElement), left(lt), right(rt), height(h) { }
 	friend class AvlTree<T>;
 };
-
-#include <iostream>       // For NULL
 
 // AvlTree class
 //
@@ -39,9 +39,9 @@ class AvlTree
 {
 public:
 	explicit AvlTree(const T & notFound) :
-		ITEM_NOT_FOUND(notFound), root(NULL) {}
+		ITEM_NOT_FOUND(notFound), root(nullptr) {}
 	AvlTree(const AvlTree & rhs) :
-		ITEM_NOT_FOUND(rhs.ITEM_NOT_FOUND), root(NULL) {
+		ITEM_NOT_FOUND(rhs.ITEM_NOT_FOUND), root(nullptr) {
 		*this = rhs;
 	}
 	~AvlTree()
@@ -63,14 +63,14 @@ public:
 	}
 	bool isEmpty()
 	{
-		return root == NULL;
+		return root == nullptr;
 	}
-	void printTree()
+	void printTree(std::ostream & stream)
 	{
 		if (isEmpty())
-			std::cout << "Empty tree" << std::endl;
+			stream << "Empty tree" << std::endl;
 		else
-			printTree(root);
+			printTree(root, stream);
 	}
 
 	void makeEmpty()
@@ -101,13 +101,13 @@ public:
 		return isBalanced(root);
 	}
 
-private:
+protected:
 	AvlNode<T> *root;
 	const T ITEM_NOT_FOUND;
 
 	const T & elementAt(AvlNode<T> *t)
 	{
-		if (t == NULL)
+		if (t == nullptr)
 			return ITEM_NOT_FOUND;
 		else
 			return t->element;
@@ -115,8 +115,8 @@ private:
 
 	void insert(const T & x, AvlNode<T> * & t)
 	{
-		if (t == NULL)
-			t = new AvlNode<T>(x, NULL, NULL);
+		if (t == nullptr)
+			t = new AvlNode<T>(x, nullptr, nullptr);
 		else if (x < t->element)
 		{
 			insert(x, t->left);
@@ -143,9 +143,9 @@ private:
 	}
 	AvlNode<T> * remove(const T & x, AvlNode<T> * & t)
 	{
-		if (t == NULL)
+		if (t == nullptr)
 		{
-			return NULL;
+			return nullptr;
 		}
 		else if (x < t->element)
 			t->left = remove(x, t->left);
@@ -168,25 +168,25 @@ private:
 	}
 	AvlNode<T> * findMin(AvlNode<T> *t) 
 	{
-		if (t == NULL)
+		if (t == nullptr)
 			return t;
 
-		while (t->left != NULL)
+		while (t->left != nullptr)
 			t = t->left;
 		return t;
 	}
 	AvlNode<T> * findMax(AvlNode<T> *t)
 	{
-		if (t == NULL)
+		if (t == nullptr)
 			return t;
 
-		while (t->right != NULL)
+		while (t->right != nullptr)
 			t = t->right;
 		return t;
 	}
 	AvlNode<T> * find(const T & x, AvlNode<T> *t) 
 	{
-		while (t != NULL)
+		while (t != nullptr)
 			if (x < t->element)
 				t = t->left;
 			else if (t->element < x)
@@ -194,31 +194,31 @@ private:
 			else
 				return t;    // Match
 
-		return NULL;   // No match
+		return nullptr;   // No match
 	}
 	void makeEmpty(AvlNode<T> * & t) 
 	{
-		if (t != NULL)
+		if (t != nullptr)
 		{
 			makeEmpty(t->left);
 			makeEmpty(t->right);
 			delete t;
 		}
-		t = NULL;
+		t = nullptr;
 	}
-	void printTree(AvlNode<T> *t)
+	void printTree(AvlNode<T> *t, std::ostream & stream)
 	{
-		if (t != NULL)
+		if (t != nullptr)
 		{
 			printTree(t->left);
-			std::cout << t->element << std::endl;
+			stream << t->element << std::endl;
 			printTree(t->right);
 		}
 	}
 	AvlNode<T> * clone(AvlNode<T> *t)
 	{
-		if (t == NULL)
-			return NULL;
+		if (t == nullptr)
+			return nullptr;
 		else
 			return new AvlNode<T>(t->element, clone(t->left),
 				clone(t->right), t->height);
@@ -229,7 +229,7 @@ private:
 		int rh; /* for height of right subtree */
 
 				/* If tree is empty then return true */
-		if (n == NULL)
+		if (n == nullptr)
 			return 1;
 
 		/* Get the height of left and right sub trees */
@@ -246,6 +246,7 @@ private:
 		return 0;
 	}
 
+private:
 	// Avl manipulations
 	int balance_factor(AvlNode<T> *t)
 	{
@@ -254,7 +255,7 @@ private:
 
 	int height(AvlNode<T> *t)
 	{
-		return t == NULL ? -1 : t->height;
+		return t == nullptr ? -1 : t->height;
 	}
 	void fixheight(AvlNode<T> *t)
 	{
