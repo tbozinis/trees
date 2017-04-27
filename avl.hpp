@@ -1,6 +1,4 @@
-#ifndef AVL_TREE_H_
-#define AVL_TREE_H_
-
+#pragma once
 
 // Node and forward declaration because g++ does
 // not understand nested classes.
@@ -20,7 +18,6 @@ class AvlNode
 	friend class AvlTree<T>;
 };
 
-//#include "dsexceptions.h"
 #include <iostream>       // For NULL
 
 // AvlTree class
@@ -40,7 +37,6 @@ class AvlNode
 template <class T>
 class AvlTree
 {
-#pragma region public
 public:
 	explicit AvlTree(const T & notFound) :
 		ITEM_NOT_FOUND(notFound), root(NULL) {}
@@ -72,7 +68,7 @@ public:
 	void printTree()
 	{
 		if (isEmpty())
-			cout << "Empty tree" << endl;
+			std::cout << "Empty tree" << std::endl;
 		else
 			printTree(root);
 	}
@@ -104,9 +100,7 @@ public:
 	{
 		return isBalanced(root);
 	}
-#pragma endregion
 
-#pragma region privete
 private:
 	AvlNode<T> *root;
 	const T ITEM_NOT_FOUND;
@@ -126,20 +120,22 @@ private:
 		else if (x < t->element)
 		{
 			insert(x, t->left);
-			if (height(t->left) - height(t->right) == 2)
+			if (height(t->left) - height(t->right) == 2) {
 				if (x < t->left->element)
 					right_rotation(t);
 				else
 					doubleWithLeftChild(t);
+			}
 		}
 		else if (t->element < x)
 		{
 			insert(x, t->right);
-			if (height(t->right) - height(t->left) == 2)
+			if (height(t->right) - height(t->left) == 2) {
 				if (t->right->element < x)
 					left_rotation(t);
 				else
 					doubleWithRightChild(t);
+			}
 		}
 		else
 			;  // Duplicate; do nothing
@@ -215,7 +211,7 @@ private:
 		if (t != NULL)
 		{
 			printTree(t->left);
-			cout << t->element << endl;
+			std::cout << t->element << std::endl;
 			printTree(t->right);
 		}
 	}
@@ -239,8 +235,9 @@ private:
 		/* Get the height of left and right sub trees */
 		lh = height(n->left);
 		rh = height(n->right);
-
-		if (abs(lh - rh) <= 1 &&
+		
+		int hdif = lh > rh ? lh - rh : rh - lh;
+		if (hdif <= 1 &&
 			isBalanced(n->left) &&
 			isBalanced(n->right))
 			return 1;
@@ -263,7 +260,7 @@ private:
 	{
 		int h1 = height(t->left);
 		int h2 = height(t->right);
-		t->height = max(h1, h2) + 1;
+		t->height = (h1 > h2 ? h1 : h2) + 1;
 	}
 	AvlNode<T>* balance(AvlNode<T> * & n)
 	{
@@ -319,7 +316,5 @@ private:
 		right_rotation(k1->right);
 		return left_rotation(k1);
 	}
-#pragma endregion
 
 };
-#endif
