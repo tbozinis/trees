@@ -85,7 +85,7 @@ public:
 		if (isEmpty())
 			stream << "Empty tree" << std::endl;
 		else
-			printTree(root, stream);
+			print(root, stream);
 	}
 
 	void clear() {
@@ -109,7 +109,7 @@ public:
 	}
 
 	bool isBalanced() const {
-		return isBalanced(root);
+		return is_balanced(root);
 	}
 
 	int getSize() const { return size; }
@@ -229,7 +229,7 @@ protected:
 		t = nullptr;
 	}
 
-	void printTree(AvlNode<T> *t, std::ostream & stream) const {
+	void print(AvlNode<T> *t, std::ostream & stream) const {
 		if (t == nullptr) return;
 
 		printTree(t->left);
@@ -244,7 +244,7 @@ protected:
 			clone(t->right), t->height);
 	}
 
-	bool isBalanced(AvlNode<T> *n) const {
+	bool is_balanced(AvlNode<T> *n) const {
 
 		// If tree is empty then return true
 		if (n == nullptr) return true;
@@ -255,8 +255,8 @@ protected:
 
 		int hdif = lh > rh ? lh - rh : rh - lh;
 		if (hdif <= 1 &&
-			isBalanced(n->left) &&
-			isBalanced(n->right))
+			is_balanced(n->left) &&
+			is_balanced(n->right))
 			return true;
 
 		// If we reach here then tree is not height-balanced
