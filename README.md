@@ -1,2 +1,3 @@
-# avl-tree
-AVL tree template implementation 
+# trees
+
+Tree template implementation 

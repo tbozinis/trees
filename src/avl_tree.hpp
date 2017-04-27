@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ostream>
+#include "tree.hpp"
 
 // Node and forward declaration because g++ does
 // not understand nested classes.
@@ -41,23 +41,20 @@ private:
 // void printTree( )      --> Print tree in sorted order
 
 template <class T>
-class AvlTree {
+class AvlTree : public AbstractTree<T> {
 public:
 
 	AvlTree() :
 		root(nullptr),
-		size(0),
-		ITEM_NOT_FOUND(0) { }
+		size(0) { }
 
 	explicit AvlTree(const T & notFound) :
 		root(nullptr),
-		size(0),
-		ITEM_NOT_FOUND(notFound) { }
+		size(0) { }
 
 	AvlTree(const AvlTree & rhs) :
 		root(nullptr),
-		size(rhs.size),
-		ITEM_NOT_FOUND(rhs.ITEM_NOT_FOUND) {
+		size(rhs.size) {
 		*this = rhs;
 	}
 
@@ -73,30 +70,30 @@ public:
 		return elementAt(findMax(root));
 	}
 
-	const T & find(const T & x) const {
-		return elementAt(find(x, root));
+	Optional<T> find(const T & element) const override {
+		return elementAt(find(element, root));
 	}
 
-	bool isEmpty() const {
+	bool empty() const override {
 		return root == nullptr;
 	}
 
-	void printTree(std::ostream & stream) const {
-		if (isEmpty())
+	void print(std::ostream & stream) const override {
+		if (empty())
 			stream << "Empty tree" << std::endl;
 		else
-			printTree(root, stream);
+			print(root, stream);
 	}
 
-	void clear() {
+	void clear() override {
 		clear(root);
 	}
 
-	void insert(const T & x) {
+	void insert(const T & x) override {
 		insert(x, root);
 	}
 
-	void remove(const T & x) {
+	void remove(const T & x) override {
 		root = remove(x, root);
 	}
 
@@ -109,7 +106,7 @@ public:
 	}
 
 	bool isBalanced() const {
-		return isBalanced(root);
+		return is_balanced(root);
 	}
 
 	int getSize() const { return size; }
@@ -120,12 +117,10 @@ protected:
 	
 	int size;
 
-	const T ITEM_NOT_FOUND;
+	const Optional<T> elementAt(AvlNode<T> *t) const {
+		if (t == nullptr) return Optional<T>();
 
-	const T & elementAt(AvlNode<T> *t) const {
-		if (t == nullptr) return ITEM_NOT_FOUND;
-
-		return t->element;
+		return Optional<T>(t->element);
 	}
 
 	bool insert(const T & x, AvlNode<T> * & t) {
@@ -229,12 +224,12 @@ protected:
 		t = nullptr;
 	}
 
-	void printTree(AvlNode<T> *t, std::ostream & stream) const {
+	void print(AvlNode<T> *t, std::ostream & stream) const {
 		if (t == nullptr) return;
 
-		printTree(t->left);
+		print(t->left, stream);
 		stream << t->element << std::endl;
-		printTree(t->right);
+		print(t->right, stream);
 	}
 
 	AvlNode<T> * clone(AvlNode<T> *t) {
@@ -244,7 +239,7 @@ protected:
 			clone(t->right), t->height);
 	}
 
-	bool isBalanced(AvlNode<T> *n) const {
+	bool is_balanced(AvlNode<T> *n) const {
 
 		// If tree is empty then return true
 		if (n == nullptr) return true;
@@ -255,8 +250,8 @@ protected:
 
 		int hdif = lh > rh ? lh - rh : rh - lh;
 		if (hdif <= 1 &&
-			isBalanced(n->left) &&
-			isBalanced(n->right))
+			is_balanced(n->left) &&
+			is_balanced(n->right))
 			return true;
 
 		// If we reach here then tree is not height-balanced
