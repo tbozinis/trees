@@ -1,4 +1,7 @@
 
+#include "tree.hpp"
+
+
 template <class T>
 class RedBlackTree;
 
@@ -38,25 +41,28 @@ private:
 };
 
 template <class T>
-class RedBlackTree {
+class RedBlackTree : public AbstractTree<T> {
 public:
 
 	RedBlackTree() {
 		this->root = nullptr;
 	}
 
-	bool isEmpty() {
+	bool empty() const override {
 		return root == nullptr;
 	}
 
-	RedBlackNode<T>* find(T element) {
-		if (this->isEmpty()) return nullptr;
+	Optional<T> find(const T & element) const override {
+		if (this->empty()) return Optional<T>();
 		
-		return this->find(root, element);
+		RedBlackNode<T>* node = this->find(root, element);
+		if (node == nullptr) return Optional<T>();
+		
+		return Optional<T>(node->element);
 	}
 
-	void insert(T element) {
-		if (this->isEmpty()) {
+	void insert(const T & element) override {
+		if (this->empty()) {
 			this->root = new RedBlackNode<T>(element);
 			this->root->recolor();
 		} else {
@@ -64,8 +70,8 @@ public:
 		}
 	}
 
-	void remove(T element) {
-		if (!this->isEmpty()) this->remove(root, element);
+	void remove(const T & element) override {
+		if (!this->empty()) this->remove(root, element);
 	}
 
 protected:
@@ -73,7 +79,7 @@ protected:
 	RedBlackNode<T>* root;
 
 
-	RedBlackNode<T>* find(RedBlackNode<T> *root, T element) {
+	RedBlackNode<T>* find(RedBlackNode<T> *root, T element) const {
 		if (root->element == element) {
 			return root;
 		} else if (root->element > element) {

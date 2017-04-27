@@ -2,10 +2,10 @@
 
 #include <ostream>
 
-template <class T, int MAXLEVEL>
+template <typename T, int MAXLEVEL>
 class SkipList;
 
-template <class T, int MAXLEVEL>
+template <typename T, int MAXLEVEL>
 class SkipListNode {
 	friend class SkipList<T, MAXLEVEL>;
 public:
@@ -31,8 +31,8 @@ private:
 
 };
 
-template <class T, int MAXLEVEL = 16>
-class SkipList {
+template <typename T, int MAXLEVEL = 16>
+class SkipList : public AbstractTree<T> {
 public:
 	typedef SkipListNode<T, MAXLEVEL> NodeType;
 
@@ -56,7 +56,7 @@ public:
 		delete tail;
 	}
 
-	void insert(T element) {
+	void insert(const T & element) override {
 		SkipListNode<T, MAXLEVEL>* update[MAXLEVEL];
 		NodeType* currNode = header;
 		for (int level = max_curr_level; level >= 1; level--) {
@@ -67,7 +67,7 @@ public:
 		}
 		currNode = currNode->forwards[1];
 		if (currNode->element == element) {
-			return false;
+			//skip
 		} else {
 			int newlevel = randomLevel();
 			if (newlevel > max_curr_level) {
@@ -82,10 +82,9 @@ public:
 				update[lv]->forwards[lv] = currNode;
 			}
 		}
-		return true;
 	}
 
-	void erase(T element) {
+	void remove(const T & element) override {
 		SkipListNode<T, MAXLEVEL>* update[MAXLEVEL];
 		NodeType* currNode = header;
 		for (int level = max_curr_level; level >= 1; level--) {
@@ -110,7 +109,7 @@ public:
 		}
 	}
 
-	const NodeType* find(T element) {
+	Optional<T> find(const T & element) const override {
 		NodeType* currNode = header;
 		for (int level = max_curr_level; level >= 1; level--) {
 			while (currNode->forwards[level]->element < element) {
@@ -119,13 +118,13 @@ public:
 		}
 		currNode = currNode->forwards[1];
 		if (currNode->element == element) {
-			return currNode;
+			return Optional<T>(currNode->element);
 		} else {
-			return nullptr;
+			return Optional<T>();
 		}
 	}
 
-	bool empty() const {
+	bool empty() const override {
 		return ( header->forwards[1] == tail);
 	}
 	

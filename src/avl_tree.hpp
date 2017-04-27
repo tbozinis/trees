@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ostream>
+#include "tree.hpp"
 
 // Node and forward declaration because g++ does
 // not understand nested classes.
@@ -41,7 +41,7 @@ private:
 // void printTree( )      --> Print tree in sorted order
 
 template <class T>
-class AvlTree {
+class AvlTree : public AbstractTree<T> {
 public:
 
 	AvlTree() :
@@ -73,30 +73,30 @@ public:
 		return elementAt(findMax(root));
 	}
 
-	const T & find(const T & x) const {
-		return elementAt(find(x, root));
+	Optional<T> find(const T & element) const override {
+		return elementAt(find(element, root));
 	}
 
-	bool isEmpty() const {
+	bool empty() const override {
 		return root == nullptr;
 	}
 
-	void printTree(std::ostream & stream) const {
-		if (isEmpty())
+	void print(std::ostream & stream) const override {
+		if (empty())
 			stream << "Empty tree" << std::endl;
 		else
 			print(root, stream);
 	}
 
-	void clear() {
+	void clear() override {
 		clear(root);
 	}
 
-	void insert(const T & x) {
+	void insert(const T & x) override {
 		insert(x, root);
 	}
 
-	void remove(const T & x) {
+	void remove(const T & x) override {
 		root = remove(x, root);
 	}
 
@@ -122,10 +122,10 @@ protected:
 
 	const T ITEM_NOT_FOUND;
 
-	const T & elementAt(AvlNode<T> *t) const {
-		if (t == nullptr) return ITEM_NOT_FOUND;
+	const Optional<T> elementAt(AvlNode<T> *t) const {
+		if (t == nullptr) return Optional<T>();
 
-		return t->element;
+		return Optional<T>(t->element);
 	}
 
 	bool insert(const T & x, AvlNode<T> * & t) {
@@ -232,9 +232,9 @@ protected:
 	void print(AvlNode<T> *t, std::ostream & stream) const {
 		if (t == nullptr) return;
 
-		printTree(t->left);
+		print(t->left, stream);
 		stream << t->element << std::endl;
-		printTree(t->right);
+		print(t->right, stream);
 	}
 
 	AvlNode<T> * clone(AvlNode<T> *t) {

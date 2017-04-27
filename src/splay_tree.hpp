@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "tree.hpp"
+
 template<typename T, typename Comp>
 class SplayTree;
 
@@ -9,7 +11,7 @@ template<typename T, typename Comp>
 class SplayTreeNode {
 	friend class SplayTree<T, Comp>;
 public:
-	
+
 protected:
 
 	T element;
@@ -30,7 +32,7 @@ private:
 };
 
 template<typename T, typename Comp = std::less<T>>
-class SplayTree {
+class SplayTree : public AbstractTree<T> {
 public:
 	typedef SplayTreeNode<T, Comp> NodeType;
 
@@ -111,7 +113,7 @@ public:
 	SplayTree() : root(nullptr), p_size(0) {
 	}
 
-	void insert(const T &key) {
+	void insert(const T &key) override {
 		NodeType *z = root;
 		NodeType *p = nullptr;
 
@@ -132,18 +134,16 @@ public:
 		p_size++;
 	}
 
-	NodeType* find(const T &key) {
-		NodeType *z = root;
-		while (z) {
-			if (comp(z->element, key)) z = z->right;
-			else if (comp(key, z->element)) z = z->left;
-			else return z;
-		}
-		return nullptr;
+	Optional<T> find(const T &key) const override {
+		NodeType *z = findNode(key);
+
+		if (z == nullptr) return Optional<T>();
+
+		return Optional<T>(z->element);
 	}
 
-	void remove(const T &key) {
-		NodeType *z = find(key);
+	void remove(const T &key) override {
+		NodeType *z = findNode(key);
 		if (!z) return;
 
 		splay(z);
@@ -174,11 +174,23 @@ public:
 		return subtree_maximum(root)->element;
 	}
 
-	bool empty() const {
+	bool empty() const override {
 		return root == nullptr;
 	}
 
 	unsigned long size() const {
 		return p_size;
+	}
+
+protected:
+
+	NodeType* findNode(const T &key) const {
+		NodeType *z = root;
+		while (z) {
+			if (comp(z->element, key)) z = z->right;
+			else if (comp(key, z->element)) z = z->left;
+			else return z;
+		}
+		return nullptr;
 	}
 };
