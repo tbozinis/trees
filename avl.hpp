@@ -31,22 +31,25 @@ class AvlNode
 // Comparable findMin( )  --> Return smallest item
 // Comparable findMax( )  --> Return largest item
 // boolean isEmpty( )     --> Return true if empty; else false
-// void makeEmpty( )      --> Remove all items
+// void clear( )          --> Remove all items
 // void printTree( )      --> Print tree in sorted order
 
 template <class T>
 class AvlTree
 {
 public:
+
 	explicit AvlTree(const T & notFound) :
 		ITEM_NOT_FOUND(notFound), root(nullptr) {}
+
 	AvlTree(const AvlTree & rhs) :
 		ITEM_NOT_FOUND(rhs.ITEM_NOT_FOUND), root(nullptr) {
 		*this = rhs;
 	}
+
 	~AvlTree()
 	{
-		makeEmpty();
+		clear();
 	}
 
 	const T & findMin()
@@ -73,9 +76,9 @@ public:
 			printTree(root, stream);
 	}
 
-	void makeEmpty()
+	void clear()
 	{
-		makeEmpty(root);
+		clear(root);
 	}
 	void insert(const T & x)
 	{
@@ -90,7 +93,7 @@ public:
 	{
 		if (this != &rhs)
 		{
-			makeEmpty();
+			clear();
 			root = clone(rhs.root);
 		}
 		return *this;
@@ -113,46 +116,49 @@ protected:
 			return t->element;
 	}
 
-	void insert(const T & x, AvlNode<T> * & t)
+	bool insert(const T & x, AvlNode<T> * & t)
 	{
-		if (t == nullptr)
+		if (t == nullptr) {
 			t = new AvlNode<T>(x, nullptr, nullptr);
+		}
 		else if (x < t->element)
 		{
-			insert(x, t->left);
+			if(!insert(x, t->left)) return false;
+			
 			if (height(t->left) - height(t->right) == 2) {
 				if (x < t->left->element)
-					right_rotation(t);
+					rotate_r(t);
 				else
-					doubleWithLeftChild(t);
+					rotate_lr(t);
 			}
 		}
 		else if (t->element < x)
 		{
-			insert(x, t->right);
+			if(!insert(x, t->right)) return false;
+			
 			if (height(t->right) - height(t->left) == 2) {
 				if (t->right->element < x)
-					left_rotation(t);
+					rotate_l(t);
 				else
-					doubleWithRightChild(t);
+					rotate_rl(t);
 			}
 		}
-		else
-			;  // Duplicate; do nothing
+		else {
+			return false;
+		}
 		t->height = max(height(t->left), height(t->right)) + 1;
+		return true;
 	}
 	AvlNode<T> * remove(const T & x, AvlNode<T> * & t)
 	{
-		if (t == nullptr)
-		{
-			return nullptr;
-		}
-		else if (x < t->element)
+		if (t == nullptr) return nullptr;
+		
+		if (x < t->element) {
 			t->left = remove(x, t->left);
-		else if (t->element < x)
+		} else if (t->element < x) {
 			t->right = remove(x, t->right);
-		else
-		{
+		} else {
+
 			AvlNode<T>* l = t->left;
 			AvlNode<T>* r = t->right;
 
@@ -168,42 +174,42 @@ protected:
 	}
 	AvlNode<T> * findMin(AvlNode<T> *t) 
 	{
-		if (t == nullptr)
-			return t;
+		if (t == nullptr) return nullptr;
 
-		while (t->left != nullptr)
+		while (t->left) {
 			t = t->left;
+		}
 		return t;
 	}
 	AvlNode<T> * findMax(AvlNode<T> *t)
 	{
-		if (t == nullptr)
-			return t;
+		if (t == nullptr) return nullptr;
 
-		while (t->right != nullptr)
+		while (t->right) {
 			t = t->right;
+		}
 		return t;
 	}
 	AvlNode<T> * find(const T & x, AvlNode<T> *t) 
 	{
-		while (t != nullptr)
+		while (t != nullptr) {
 			if (x < t->element)
 				t = t->left;
 			else if (t->element < x)
 				t = t->right;
 			else
-				return t;    // Match
-
-		return nullptr;   // No match
-	}
-	void makeEmpty(AvlNode<T> * & t) 
-	{
-		if (t != nullptr)
-		{
-			makeEmpty(t->left);
-			makeEmpty(t->right);
-			delete t;
+				return t; // Match
 		}
+		return nullptr; // No match
+	}
+	void clear(AvlNode<T> * & t) 
+	{
+		if (t == nullptr) return;
+
+		clear(t->left);
+		clear(t->right);
+		delete t;
+
 		t = nullptr;
 	}
 	void printTree(AvlNode<T> *t, std::ostream & stream)
@@ -247,6 +253,9 @@ protected:
 	}
 
 private:
+	
+	int max(int a, int b) { return a > b ? a : b;}
+
 	// Avl manipulations
 	int balance_factor(AvlNode<T> *t)
 	{
@@ -261,7 +270,7 @@ private:
 	{
 		int h1 = height(t->left);
 		int h2 = height(t->right);
-		t->height = (h1 > h2 ? h1 : h2) + 1;
+		t->height = max(h1, h2) + 1;
 	}
 	AvlNode<T>* balance(AvlNode<T> * & n)
 	{
@@ -269,14 +278,14 @@ private:
 		if (balance_factor(n) == 2)
 		{
 			if (balance_factor(n->right) < 0)
-				n->right = left_rotation(n->right);
-			return right_rotation(n);
+				n->right = rotate_l(n->right);
+			return rotate_r(n);
 		}
 		if (balance_factor(n) == 2)
 		{
 			if (balance_factor(n->left) > 0)
-				n->left = right_rotation(n->left);
-			return left_rotation(n);
+				n->left = rotate_r(n->left);
+			return rotate_l(n);
 		}
 		return n;
 	}
@@ -287,35 +296,35 @@ private:
 		temp->left = balance_min(temp->left);
 		return balance(temp);
 	}
-	AvlNode<T>* right_rotation(AvlNode<T> * & node)
+	AvlNode<T>* rotate_r(AvlNode<T> * & node)
 	{
-		AvlNode<T> *temp = node->left;
-		node->left = temp->right;
-		temp->right = node;
-		fixheight(node);
-		fixheight(temp);
+		AvlNode<T> *child = node->left;
+		child->left = child->right;
+		child->right = node;
 
-		return temp;
-	}
-	AvlNode<T>* left_rotation(AvlNode<T> * & node)
-	{
-		AvlNode<T> *temp = node->right;
-		node->right = temp->left;
-		temp->left = node;
 		fixheight(node);
-		fixheight(temp);
-
-		return temp;
+		fixheight(child);
+		return child;
 	}
-	AvlNode<T>* doubleWithLeftChild(AvlNode<T> * & k3)
+	AvlNode<T>* rotate_l(AvlNode<T> * & node)
 	{
-		left_rotation(k3->left);
-		return right_rotation(k3);
+		AvlNode<T> *child = node->right;
+		node->right = child->left;
+		child->left = node;
+		
+		fixheight(node);
+		fixheight(child);
+		return child;
 	}
-	AvlNode<T>* doubleWithRightChild(AvlNode<T> * & k1)
+	AvlNode<T>* rotate_lr(AvlNode<T> * & node)
 	{
-		right_rotation(k1->right);
-		return left_rotation(k1);
+		node->left = rotate_l(node->left);
+		return rotate_r(node);
+	}
+	AvlNode<T>* rotate_rl(AvlNode<T> * & node)
+	{
+		node->right = rotate_r(node->right);
+		return rotate_l(node);
 	}
 
 };
