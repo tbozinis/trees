@@ -46,18 +46,15 @@ public:
 
 	AvlTree() :
 		root(nullptr),
-		size(0),
-		ITEM_NOT_FOUND(0) { }
+		size(0) { }
 
 	explicit AvlTree(const T & notFound) :
 		root(nullptr),
-		size(0),
-		ITEM_NOT_FOUND(notFound) { }
+		size(0) { }
 
 	AvlTree(const AvlTree & rhs) :
 		root(nullptr),
-		size(rhs.size),
-		ITEM_NOT_FOUND(rhs.ITEM_NOT_FOUND) {
+		size(rhs.size) {
 		*this = rhs;
 	}
 
@@ -119,8 +116,6 @@ protected:
 	AvlNode<T> *root;
 	
 	int size;
-
-	const T ITEM_NOT_FOUND;
 
 	const Optional<T> elementAt(AvlNode<T> *t) const {
 		if (t == nullptr) return Optional<T>();
