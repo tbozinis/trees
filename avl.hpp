@@ -9,6 +9,7 @@ class AvlTree;
 
 template <class T>
 class AvlNode {
+	friend class AvlTree<T>;
 public:
 
 protected:
@@ -18,10 +19,8 @@ protected:
 	AvlNode *right;
 	int height;
 
-	AvlNode(const T & theElement, AvlNode *lt, AvlNode *rt, int h = 0)
+	AvlNode(const T & theElement, AvlNode *lt = nullptr, AvlNode *rt = nullptr, int h = 0)
 		: element(theElement), left(lt), right(rt), height(h) { }
-
-	friend class AvlTree<T>;
 
 private:
 
@@ -45,13 +44,20 @@ template <class T>
 class AvlTree {
 public:
 
+	AvlTree() :
+		root(nullptr),
+		size(0),
+		ITEM_NOT_FOUND(0) { }
+
 	explicit AvlTree(const T & notFound) :
-		ITEM_NOT_FOUND(notFound),
-		root(nullptr) { }
+		root(nullptr),
+		size(0),
+		ITEM_NOT_FOUND(notFound) { }
 
 	AvlTree(const AvlTree & rhs) :
-		ITEM_NOT_FOUND(rhs.ITEM_NOT_FOUND),
-		root(nullptr) {
+		root(nullptr),
+		size(rhs.size),
+		ITEM_NOT_FOUND(rhs.ITEM_NOT_FOUND) {
 		*this = rhs;
 	}
 
@@ -106,9 +112,13 @@ public:
 		return isBalanced(root);
 	}
 
+	int getSize() const { return size; }
+	
 protected:
 
 	AvlNode<T> *root;
+	
+	int size;
 
 	const T ITEM_NOT_FOUND;
 
@@ -122,6 +132,7 @@ protected:
 		if (t == nullptr) {
 
 			t = new AvlNode<T>(x, nullptr, nullptr);
+			size++;
 		}
 		else if (x < t->element) {
 
@@ -165,6 +176,7 @@ protected:
 			AvlNode<T>* r = t->right;
 
 			delete t;
+			size--;
 
 			if (!r) return l;
 
@@ -176,7 +188,7 @@ protected:
 		return balance(t);
 	}
 
-	AvlNode<T> * findMin(AvlNode<T> *t) {
+	AvlNode<T> * findMin(AvlNode<T> *t) const {
 		if (t == nullptr) return nullptr;
 
 		while (t->left) {
@@ -185,7 +197,7 @@ protected:
 		return t;
 	}
 
-	AvlNode<T> * findMax(AvlNode<T> *t) {
+	AvlNode<T> * findMax(AvlNode<T> *t) const {
 		if (t == nullptr) return nullptr;
 
 		while (t->right) {
@@ -193,7 +205,7 @@ protected:
 		}
 		return t;
 	}
-	AvlNode<T> * find(const T & x, AvlNode<T> *t) {
+	AvlNode<T> * find(const T & x, AvlNode<T> *t) const {
 
 		while (t != nullptr) {
 			if (x < t->element)
@@ -211,12 +223,13 @@ protected:
 
 		clear(t->left);
 		clear(t->right);
+		
 		delete t;
-
+		size--;
 		t = nullptr;
 	}
 
-	void printTree(AvlNode<T> *t, std::ostream & stream) {
+	void printTree(AvlNode<T> *t, std::ostream & stream) const {
 		if (t == nullptr) return;
 
 		printTree(t->left);
@@ -231,7 +244,7 @@ protected:
 			clone(t->right), t->height);
 	}
 
-	bool isBalanced(AvlNode<T> *n) {
+	bool isBalanced(AvlNode<T> *n) const {
 
 		// If tree is empty then return true
 		if (n == nullptr) return true;
@@ -255,11 +268,11 @@ private:
 	static int max(int a, int b) { return a > b ? a : b; }
 
 	// Avl manipulations
-	int balance_factor(AvlNode<T> *t) {
+	int balance_factor(AvlNode<T> *t) const {
 		return height(t->right) - height(t->left);
 	}
 
-	int height(AvlNode<T> *t) {
+	int height(AvlNode<T> *t) const {
 		return t == nullptr ? -1 : t->height;
 	}
 
