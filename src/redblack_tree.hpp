@@ -22,7 +22,7 @@ protected:
 	}
 
 	void recolor() {
-		this->isRed != this->isRed;
+		this->isRed = !this->isRed;
 	}
 
 	void set_left(RedBlackNode* left) {
@@ -175,6 +175,7 @@ private:
 
 	void balance(RedBlackNode<T> *root) {
 		if (root->isRed == false) return;
+		if (root->parent == nullptr) return;
 		if (root == root->parent->left) {
 			if (root->parent->right == nullptr || !root->parent->right->isRed) this->rotate_r(root);
 			else {

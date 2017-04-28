@@ -281,13 +281,15 @@ private:
 		fixheight(n);
 		if (balance_factor(n) == 2) {
 			if (balance_factor(n->right) < 0)
-				n->right = rotate_l(n->right);
-			return rotate_r(n);
+				rotate_l(n->right);
+			rotate_r(n);
+			return n;
 		}
 		if (balance_factor(n) == 2) {
 			if (balance_factor(n->left) > 0)
-				n->left = rotate_r(n->left);
-			return rotate_l(n);
+				rotate_r(n->left);
+			rotate_l(n);
+			return n;
 		}
 		return n;
 	}
@@ -298,34 +300,34 @@ private:
 		return balance(temp);
 	}
 
-	AvlNode<T>* rotate_r(AvlNode<T> * & node) {
+	void rotate_r(AvlNode<T> * & node) {
 		AvlNode<T> *child = node->left;
 		child->left = child->right;
 		child->right = node;
 
 		fixheight(node);
 		fixheight(child);
-		return child;
+		node = child;
 	}
 
-	AvlNode<T>* rotate_l(AvlNode<T> * & node) {
+	void rotate_l(AvlNode<T> * & node) {
 		AvlNode<T> *child = node->right;
 		node->right = child->left;
 		child->left = node;
 
 		fixheight(node);
 		fixheight(child);
-		return child;
+		node = child;
 	}
 
-	AvlNode<T>* rotate_lr(AvlNode<T> * & node) {
-		node->left = rotate_l(node->left);
-		return rotate_r(node);
+	void rotate_lr(AvlNode<T> * & node) {
+		rotate_l(node->left);
+		rotate_r(node);
 	}
 
-	AvlNode<T>* rotate_rl(AvlNode<T> * & node) {
-		node->right = rotate_r(node->right);
-		return rotate_l(node);
+	void rotate_rl(AvlNode<T> * & node) {
+		rotate_r(node->right);
+		rotate_l(node);
 	}
 
 };
