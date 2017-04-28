@@ -22,12 +22,6 @@ protected:
 	SplayTreeNode(const T& init) : element(init), left(nullptr), right(nullptr), parent(nullptr) {
 	}
 
-	~SplayTreeNode() {
-		if (left) delete left;
-		if (right) delete right;
-		if (parent) delete parent;
-	}
-
 private:
 };
 
@@ -38,9 +32,9 @@ public:
 
 private:
 	Comp comp;
-	unsigned long p_size;
 
 	NodeType *root;
+	unsigned long p_size;
 
 	void left_rotate(NodeType *x) {
 		NodeType *y = x->right;
@@ -110,7 +104,7 @@ private:
 	}
 public:
 
-	SplayTree() : root(nullptr), p_size(0) {
+	SplayTree() : root(nullptr), p_size(0L) {
 	}
 
 	void insert(const T &key) override {

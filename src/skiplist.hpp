@@ -1,28 +1,31 @@
 #pragma once
 
-#include <ostream>
+#include <stdlib.h>
 
-template <typename T, int MAXLEVEL>
+#include <ostream>
+#include <iostream>
+
+template <typename T, int ML>
 class SkipList;
 
-template <typename T, int MAXLEVEL>
+template <typename T, int ML>
 class SkipListNode {
-	friend class SkipList<T, MAXLEVEL>;
+	friend class SkipList<T, ML>;
 public:
 	
 protected:
 
 	T element;
-	SkipListNode<T, MAXLEVEL>* forwards[MAXLEVEL + 1];
+	SkipListNode<T, ML>* forwards[ML + 1];
 	
-	SkipListNode() {
-		for (int i = 1; i <= MAXLEVEL; i++) {
+	SkipListNode() {std::cout << "boom" << std::endl;
+		for (int i = 1; i <= ML; i++) {
 			forwards[i] = nullptr;
 		}
 	}
 
 	SkipListNode(T element) : element(element) {
-		for (int i = 1; i <= MAXLEVEL; i++) {
+		for (int i = 1; i <= ML; i++) {
 			forwards[i] = nullptr;
 		}
 	}
@@ -31,16 +34,15 @@ private:
 
 };
 
-template <typename T, int MAXLEVEL = 16>
+template <typename T, int ML = 16>
 class SkipList : public AbstractTree<T> {
 public:
-	typedef SkipListNode<T, MAXLEVEL> NodeType;
+	typedef SkipListNode<T, ML> NodeType;
 
-	SkipList(T min, T max) : header(nullptr), tail(nullptr),
-	max_curr_level(1), min(min), max(max) {
+	SkipList(T min, T max) : min(min), max(max), max_curr_level(1) {
 		header = new NodeType(min);
 		tail = new NodeType(max);
-		for (int i = 1; i <= MAXLEVEL; i++) {
+		for (int i = 1; i <= ML; i++) {
 			header->forwards[i] = tail;
 		}
 	}
@@ -57,7 +59,7 @@ public:
 	}
 
 	void insert(const T & element) override {
-		SkipListNode<T, MAXLEVEL>* update[MAXLEVEL];
+		SkipListNode<T, ML>* update[ML];
 		NodeType* currNode = header;
 		for (int level = max_curr_level; level >= 1; level--) {
 			while (currNode->forwards[level]->element < element) {
@@ -85,7 +87,7 @@ public:
 	}
 
 	void remove(const T & element) override {
-		SkipListNode<T, MAXLEVEL>* update[MAXLEVEL];
+		SkipListNode<T, ML>* update[ML];
 		NodeType* currNode = header;
 		for (int level = max_curr_level; level >= 1; level--) {
 			while (currNode->forwards[level]->element < element) {
@@ -145,7 +147,7 @@ protected:
 	int randomLevel() {
 		int level = 1;
 		double p = 0.5;
-		while (uniformRandom() < p && level < MAXLEVEL) {
+		while (uniformRandom() < p && level < ML) {
 			level++;
 		}
 		return level;
@@ -154,8 +156,8 @@ protected:
 	T min;
 	T max;
 	int max_curr_level;
-	SkipListNode<T, MAXLEVEL>* header;
-	SkipListNode<T, MAXLEVEL>* tail;
+	SkipListNode<T, ML>* header;
+	SkipListNode<T, ML>* tail;
 
 private:
 		
