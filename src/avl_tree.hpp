@@ -32,7 +32,7 @@ private:
 //
 // ******************PUBLIC OPERATIONS*********************
 // void insert( x )       --> Insert x
-// void remove( x )       --> Remove x (unimplemented)
+// void remove( x )       --> Remove x
 // Comparable find( x )   --> Return item that matches x
 // Comparable findMin( )  --> Return smallest item
 // Comparable findMax( )  --> Return largest item
@@ -90,7 +90,7 @@ public:
 	}
 
 	void insert(const T & x) override {
-		insert(x, root);
+		root = insert(x, root);
 	}
 
 	void remove(const T & x) override {
@@ -123,41 +123,22 @@ protected:
 		return Optional<T>(t->element);
 	}
 
-	bool insert(const T & x, AvlNode<T> * & t) {
+	AvlNode<T>* insert(const T & x, AvlNode<T> * & t) {
 		if (t == nullptr) {
-
-			t = new AvlNode<T>(x, nullptr, nullptr);
 			size++;
+			return new AvlNode<T>(x, nullptr, nullptr);
 		}
 		else if (x < t->element) {
-
-			if(!insert(x, t->left)) return false;
-
-			/*if (height(t->left) - height(t->right) == 2) {
-				if (x < t->left->element)
-					rotate_r(t);
-				else
-					rotate_lr(t);
-			}*/
-			balance(t);
+			t->left = insert(x, t->left);
 		}
 		else if (t->element < x) {
-
-			if(!insert(x, t->right)) return false;
-
-			/*if (height(t->right) - height(t->left) == 2) {
-				if (t->right->element < x)
-					rotate_l(t);
-				else
-					rotate_rl(t);
-			}*/
-			balance(t);
+			t->right = insert(x, t->right);
 		}
 		else {
-			return false;
+			return nullptr;
 		}
-		t->height = max(height(t->left), height(t->right)) + 1;
-		return true;
+		balance(t);
+		return t;
 	}
 
 	AvlNode<T> * remove(const T & x, AvlNode<T> * & t) {
@@ -168,7 +149,6 @@ protected:
 		} else if (t->element < x) {
 			t->right = remove(x, t->right);
 		} else {
-
 			AvlNode<T>* l = t->left;
 			AvlNode<T>* r = t->right;
 
@@ -181,7 +161,6 @@ protected:
 			min->right = balance_min(r);
 			min->left = l;
 			AvlNode<T>* old = balance(min);
-			cout << is_balanced(old) << endl;
 			return old;
 		}
 		return balance(t);
@@ -260,7 +239,6 @@ protected:
 			return true;
 
 		// If we reach here then tree is not height-balanced
-		cout << n->element << "is unblanced..." << endl;
 		return false;
 	}
 
@@ -290,16 +268,17 @@ private:
 		if (balance_factor(n) == 2) {
 			//if right subtree is left heavy
 			if (balance_factor(n->right) < 0)
-				rotate_lr(n);
+				rotate_rl(n);
 			else
 				rotate_l(n);
 			return n;
 		}
+
 		//left heavy
 		if (balance_factor(n) == -2) {
 			//if left subtree is right heavy
 			if (balance_factor(n->left) > 0)
-				rotate_rl(n);
+				rotate_lr(n);
 			else
 				rotate_r(n);
 			return n;
