@@ -4,12 +4,12 @@
 
 #include "tree.hpp"
 
-template<typename T, typename Comp>
+template<typename T>
 class SplayTree;
 
-template<typename T, typename Comp>
+template<typename T>
 class SplayTreeNode {
-	friend class SplayTree<T, Comp>;
+	friend class SplayTree<T>;
 public:
 
 protected:
@@ -17,174 +17,186 @@ protected:
 	T element;
 	SplayTreeNode *left;
 	SplayTreeNode *right;
-	SplayTreeNode *parent;
 
-	SplayTreeNode(const T& init) : element(init), left(nullptr), right(nullptr), parent(nullptr) {
+	SplayTreeNode(const T& init) : element(init), left(nullptr), right(nullptr) {
 	}
 
 private:
 };
 
-template<typename T, typename Comp = std::less<T>>
-class SplayTree : public AbstractTree<T> {
-public:
-	typedef SplayTreeNode<T, Comp> NodeType;
+template <typename T>
+class SplayTree : public AbstractTree<T>
+{
+    public:
+		typedef SplayTreeNode<T> splay;
 
-private:
-	Comp comp;
+		splay *root = nullptr;
 
-	NodeType *root;
-	unsigned long p_size;
+        SplayTree()
+        {
+        }
 
-	void left_rotate(NodeType *x) {
-		NodeType *y = x->right;
-		if (y) {
-			x->right = y->left;
-			if (y->left) y->left->parent = x;
-			y->parent = x->parent;
-		}
+        // RR(Y rotates to the right)
+        splay* RR_Rotate(splay* k2)
+        {
+            splay* k1 = k2->left;
+            k2->left = k1->right;
+            k1->right = k2;
+            return k1;
+        }
 
-		if (!x->parent) root = y;
-		else if (x == x->parent->left) x->parent->left = y;
-		else x->parent->right = y;
-		if (y) y->left = x;
-		x->parent = y;
-	}
+        // LL(Y rotates to the left)
+        splay* LL_Rotate(splay* k2)
+        {
+            splay* k1 = k2->right;
+            k2->right = k1->left;
+            k1->left = k2;
+            return k1;
+        }
 
-	void right_rotate(NodeType *x) {
-		NodeType *y = x->left;
-		if (y) {
-			x->left = y->right;
-			if (y->right) y->right->parent = x;
-			y->parent = x->parent;
-		}
-		if (!x->parent) root = y;
-		else if (x == x->parent->left) x->parent->left = y;
-		else x->parent->right = y;
-		if (y) y->right = x;
-		x->parent = y;
-	}
+        // An implementation of top-down splay tree
+        splay* Splay(T element, splay* root)
+        {
+            if (!root)
+                return nullptr;
+            splay header(element);
+            /* header.right points to L tree;
+            header.left points to R Tree */
+            header.left = header.right = nullptr;
+            splay* LeftTreeMax = &header;
+            splay* RightTreeMin = &header;
+            while (1)
+            {
+                if (element < root->element)
+                {
+                    if (!root->left)
+                        break;
+                    if (element < root->left->element)
+                    {
+                        root = RR_Rotate(root);
+                        // only zig-zig mode need to rotate once,
+                        if (!root->left)
+                            break;
+                    }
+                    /* Link to R Tree */
+                    RightTreeMin->left = root;
+                    RightTreeMin = RightTreeMin->left;
+                    root = root->left;
+                    RightTreeMin->left = nullptr;
+                }
+                else if (element > root->element)
+                {
+                    if (!root->right)
+                        break;
+                    if (element > root->right->element)
+                    {
+                        root = LL_Rotate(root);
+                        // only zag-zag mode need to rotate once,
+                        if (!root->right)
+                            break;
+                    }
+                    /* Link to L Tree */
+                    LeftTreeMax->right = root;
+                    LeftTreeMax = LeftTreeMax->right;
+                    root = root->right;
+                    LeftTreeMax->right = nullptr;
+                }
+                else
+                    break;
+            }
+            /* assemble L Tree, Middle Tree and R tree */
+            LeftTreeMax->right = root->left;
+            RightTreeMin->left = root->right;
+            root->left = header.right;
+            root->right = header.left;
+            return root;
+        }
 
-	void splay(NodeType *x) {
-		while (x->parent) {
-			if (!x->parent->parent) {
-				if (x->parent->left == x) right_rotate(x->parent);
-				else left_rotate(x->parent);
-			} else if (x->parent->left == x && x->parent->parent->left == x->parent) {
-				right_rotate(x->parent->parent);
-				right_rotate(x->parent);
-			} else if (x->parent->right == x && x->parent->parent->right == x->parent) {
-				left_rotate(x->parent->parent);
-				left_rotate(x->parent);
-			} else if (x->parent->left == x && x->parent->parent->right == x->parent) {
-				right_rotate(x->parent);
-				left_rotate(x->parent);
+        splay* New_Node(T element)
+        {
+            splay* p_node = new splay(element);
+            return p_node;
+        }
+
+        void insert(const T & element) override
+        {
+            static splay* p_node = nullptr;
+            if (!p_node)
+                p_node = New_Node(element);
+            else
+                p_node->element = element;
+            if (!root)
+            {
+                root = p_node;
+                p_node = nullptr;
+                return;
+            }
+            root = Splay(element, root);
+            /* This is BST that, all elements <= root->element is in root->left, all elements >
+            root->element is in root->right. */
+            if (element < root->element)
+            {
+                p_node->left = root->left;
+                p_node->right = root;
+                root->left = nullptr;
+                root = p_node;
+            }
+            else if (element > root->element)
+            {
+                p_node->right = root->right;
+                p_node->left = root;
+                root->right = nullptr;
+                root = p_node;
+            }
+            else
+                return;
+            p_node = nullptr;
+        }
+
+        void remove(const T & element)
+        {
+            splay* temp;
+            if (!root)
+                return;
+            root = Splay(element, root);
+            if (element != root->element)
+                return;
+            else
+            {
+                if (!root->left)
+                {
+                    temp = root;
+                    root = root->right;
+                }
+                else
+                {
+                    temp = root;
+                    /*Note: Since element == root->element,
+                    so after Splay(element, root->left),
+                    the tree we get will have no right child tree.*/
+                    root = Splay(element, root->left);
+                    root->right = temp->right;
+                }
+                delete temp;
+                return;
+            }
+        }
+
+        splay* Search(T element, splay* root)
+        {
+            return Splay(element, root);
+        }
+
+		Optional<T> find(const T & element) override {
+			splay *node = Search(element, root);
+			if (node) {
+				return Optional<T>(node->element);
 			} else {
-				left_rotate(x->parent);
-				right_rotate(x->parent);
+				return Optional<T>();
 			}
 		}
-	}
 
-	void replace(NodeType *u, NodeType *v) {
-		if (!u->parent) root = v;
-		else if (u == u->parent->left) u->parent->left = v;
-		else u->parent->right = v;
-		if (v) v->parent = u->parent;
-	}
-
-	NodeType* subtree_minimum(NodeType *u) {
-		while (u->left) u = u->left;
-		return u;
-	}
-
-	NodeType* subtree_maximum(NodeType *u) {
-		while (u->right) u = u->right;
-		return u;
-	}
-public:
-
-	SplayTree() : root(nullptr), p_size(0L) {
-	}
-
-	void insert(const T &key) override {
-		NodeType *z = root;
-		NodeType *p = nullptr;
-
-		while (z) {
-			p = z;
-			if (comp(z->element, key)) z = z->right;
-			else z = z->left;
+		virtual bool empty() const override {
+			return root == nullptr;
 		}
-
-		z = new NodeType(key);
-		z->parent = p;
-
-		if (!p) root = z;
-		else if (comp(p->element, z->element)) p->right = z;
-		else p->left = z;
-
-		splay(z);
-		p_size++;
-	}
-
-	Optional<T> find(const T &key) const override {
-		NodeType *z = findNode(key);
-
-		if (z == nullptr) return Optional<T>();
-
-		return Optional<T>(z->element);
-	}
-
-	void remove(const T &key) override {
-		NodeType *z = findNode(key);
-		if (!z) return;
-
-		splay(z);
-
-		if (!z->left) replace(z, z->right);
-		else if (!z->right) replace(z, z->left);
-		else {
-			NodeType *y = subtree_minimum(z->right);
-			if (y->parent != z) {
-				replace(y, y->right);
-				y->right = z->right;
-				y->right->parent = y;
-			}
-			replace(z, y);
-			y->left = z->left;
-			y->left->parent = y;
-		}
-
-		delete z;
-		p_size--;
-	}
-
-	const T& minimum() {
-		return subtree_minimum(root)->element;
-	}
-
-	const T& maximum() {
-		return subtree_maximum(root)->element;
-	}
-
-	bool empty() const override {
-		return root == nullptr;
-	}
-
-	unsigned long size() const {
-		return p_size;
-	}
-
-protected:
-
-	NodeType* findNode(const T &key) const {
-		NodeType *z = root;
-		while (z) {
-			if (comp(z->element, key)) z = z->right;
-			else if (comp(key, z->element)) z = z->left;
-			else return z;
-		}
-		return nullptr;
-	}
 };
