@@ -32,7 +32,7 @@ private:
 //
 // ******************PUBLIC OPERATIONS*********************
 // void insert( x )       --> Insert x
-// void remove( x )       --> Remove x
+// void remove( x )       --> Remove x (unimplemented)
 // Comparable find( x )   --> Return item that matches x
 // Comparable findMin( )  --> Return smallest item
 // Comparable findMax( )  --> Return largest item
@@ -70,7 +70,7 @@ public:
 		return elementAt(findMax(root));
 	}
 
-	Optional<T> find(const T & element) const override {
+	Optional<T> find(const T & element) override {
 		return elementAt(find(element, root));
 	}
 
@@ -90,7 +90,7 @@ public:
 	}
 
 	void insert(const T & x) override {
-		root = insert(x, root);
+		insert(x, root);
 	}
 
 	void remove(const T & x) override {
@@ -110,11 +110,11 @@ public:
 	}
 
 	int getSize() const { return size; }
-	
+
 protected:
 
 	AvlNode<T> *root;
-	
+
 	int size;
 
 	const Optional<T> elementAt(AvlNode<T> *t) const {
@@ -123,22 +123,39 @@ protected:
 		return Optional<T>(t->element);
 	}
 
-	AvlNode<T>* insert(const T & x, AvlNode<T> * & t) {
+	bool insert(const T & x, AvlNode<T> * & t) {
 		if (t == nullptr) {
+
+			t = new AvlNode<T>(x, nullptr, nullptr);
 			size++;
-			return new AvlNode<T>(x, nullptr, nullptr);
 		}
 		else if (x < t->element) {
-			t->left = insert(x, t->left);
+
+			if(!insert(x, t->left)) return false;
+
+			if (height(t->left) - height(t->right) == 2) {
+				if (x < t->left->element)
+					rotate_r(t);
+				else
+					rotate_lr(t);
+			}
 		}
 		else if (t->element < x) {
-			t->right = insert(x, t->right);
+
+			if(!insert(x, t->right)) return false;
+
+			if (height(t->right) - height(t->left) == 2) {
+				if (t->right->element < x)
+					rotate_l(t);
+				else
+					rotate_rl(t);
+			}
 		}
 		else {
-			return nullptr;
+			return false;
 		}
-		balance(t);
-		return t;
+		t->height = max(height(t->left), height(t->right)) + 1;
+		return true;
 	}
 
 	AvlNode<T> * remove(const T & x, AvlNode<T> * & t) {
@@ -149,6 +166,7 @@ protected:
 		} else if (t->element < x) {
 			t->right = remove(x, t->right);
 		} else {
+
 			AvlNode<T>* l = t->left;
 			AvlNode<T>* r = t->right;
 
@@ -160,8 +178,7 @@ protected:
 			AvlNode<T>* min = findMin(r);
 			min->right = balance_min(r);
 			min->left = l;
-			AvlNode<T>* old = balance(min);
-			return old;
+			return balance(min);
 		}
 		return balance(t);
 	}
@@ -183,7 +200,6 @@ protected:
 		}
 		return t;
 	}
-	
 	AvlNode<T> * find(const T & x, AvlNode<T> *t) const {
 
 		while (t != nullptr) {
@@ -202,7 +218,7 @@ protected:
 
 		clear(t->left);
 		clear(t->right);
-		
+
 		delete t;
 		size--;
 		t = nullptr;
@@ -263,24 +279,16 @@ private:
 
 	AvlNode<T>* balance(AvlNode<T> * & n) {
 		fixheight(n);
-
-		//right heavy
 		if (balance_factor(n) == 2) {
-			//if right subtree is left heavy
 			if (balance_factor(n->right) < 0)
-				rotate_rl(n);
-			else
-				rotate_l(n);
+				rotate_l(n->right);
+			rotate_r(n);
 			return n;
 		}
-
-		//left heavy
-		if (balance_factor(n) == -2) {
-			//if left subtree is right heavy
+		if (balance_factor(n) == 2) {
 			if (balance_factor(n->left) > 0)
-				rotate_lr(n);
-			else
-				rotate_r(n);
+				rotate_r(n->left);
+			rotate_l(n);
 			return n;
 		}
 		return n;
@@ -294,7 +302,7 @@ private:
 
 	void rotate_r(AvlNode<T> * & node) {
 		AvlNode<T> *child = node->left;
-		node->left = child->right;
+		child->left = child->right;
 		child->right = node;
 
 		fixheight(node);

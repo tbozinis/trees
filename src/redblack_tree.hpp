@@ -52,12 +52,12 @@ public:
 		return root == nullptr;
 	}
 
-	Optional<T> find(const T & element) const override {
+	Optional<T> find(const T & element) override {
 		if (this->empty()) return Optional<T>();
-		
+
 		RedBlackNode<T>* node = this->find(root, element);
 		if (node == nullptr) return Optional<T>();
-		
+
 		return Optional<T>(node->element);
 	}
 

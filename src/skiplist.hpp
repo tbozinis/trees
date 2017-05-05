@@ -12,12 +12,12 @@ template <typename T, int ML>
 class SkipListNode {
 	friend class SkipList<T, ML>;
 public:
-	
+
 protected:
 
 	T element;
 	SkipListNode<T, ML>* forwards[ML + 1];
-	
+
 	SkipListNode() {std::cout << "boom" << std::endl;
 		for (int i = 1; i <= ML; i++) {
 			forwards[i] = nullptr;
@@ -111,7 +111,7 @@ public:
 		}
 	}
 
-	Optional<T> find(const T & element) const override {
+	Optional<T> find(const T & element) override {
 		NodeType* currNode = header;
 		for (int level = max_curr_level; level >= 1; level--) {
 			while (currNode->forwards[level]->element < element) {
@@ -129,7 +129,7 @@ public:
 	bool empty() const override {
 		return ( header->forwards[1] == tail);
 	}
-	
+
 	void print(std::ostream stream) {
 		NodeType* currNode = header->forwards[1];
 		while (currNode != tail) {
@@ -152,7 +152,7 @@ protected:
 		}
 		return level;
 	}
-	
+
 	T min;
 	T max;
 	int max_curr_level;
@@ -160,5 +160,5 @@ protected:
 	SkipListNode<T, ML>* tail;
 
 private:
-		
+
 };
