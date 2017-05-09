@@ -14,6 +14,8 @@
 #include <iosfwd>
 #include <utility>
 
+#include "tree.hpp"
+
 // fwd declarations
 template<typename T>
 class Tree234;
@@ -181,32 +183,35 @@ class Tree234 {
 };
 
 template <typename T, int A, int B>
-class AbTree : public AbstractTree {
+class AbTree : public AbstractTree<T> {
 public:
 
-	virtual ~AbstractTree() { }
-
-	virtual Optional<T> find(const T & element) = 0;
-
-	virtual void insert(const T & element) = 0;
-
-	virtual void remove(const T & element) = 0;
-
-	virtual void clear() {
-		throw "Not implemented";
+	AbTree() : tree() {
 	}
 
-	virtual bool empty() const = 0;
+	Optional<T> find(const T & element) override {
+		tree.search(element);
+	}
 
-	virtual void print(std::ostream & stream) const {
-		throw "Not implemented";
+	void insert(const T & element) override {
+		tree.insert(element);
+	}
+
+	void remove(const T & element) override {
+		tree.remove(element);
+	}
+
+	bool empty() const override {
+		return tree.size() == 0;
 	}
 
 protected:
 
+	Tree234<T> tree;
+
 private:
 
-}
+};
 
 template<typename K> const int  Tree234<K>::Node234::MAX_KEYS = 3;
 /*
