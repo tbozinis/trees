@@ -25,6 +25,8 @@ template <typename T>
 class AbstractTree {
 public:
 
+	virtual ~AbstractTree() { }
+
 	virtual Optional<T> find(const T & element) = 0;
 
 	virtual void insert(const T & element) = 0;
