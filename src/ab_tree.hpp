@@ -4,6 +4,7 @@
 
 #include <array>
 #include <queue>
+#include <memory>
 
 
 template<typename K, int A = 2, int B = 4>
@@ -167,7 +168,7 @@ public:
 	}
 
 	Optional<T> find(const T & element) override {
-		tree.search(element);
+		return tree.search(element);
 	}
 
 	void insert(const T & element) override {
